@@ -14,7 +14,7 @@ namespace Acme.ChatABP.RabbitMQ
         {
             var factory = new ConnectionFactory()
             {
-                Uri = new Uri("amqps://jqltktwa:***@gerbil.rmq.cloudamqp.com/jqltktwa")
+                Uri = new Uri("amqps://jqltktwa:SW-Yy67p5RIUMlBD_U6GlnPEyC1OUzw_@gerbil.rmq.cloudamqp.com/jqltktwa")
             };
             using (var connection = factory.CreateConnection())
             {

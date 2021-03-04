@@ -13,5 +13,17 @@ namespace Acme.ChatABP.Entities
         public string Content { get; set; }
         public DateTime TimeStamp { get; set; }
 
+        protected Message()
+        {
+
+        }
+
+        public Message(Guid id,  string name, string content, DateTime timeStamp)
+        {
+            Id = id;
+            SenderName = name;
+            Content = content;
+            TimeStamp = timeStamp;
+        }
     }
 }
