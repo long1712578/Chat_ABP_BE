@@ -9,6 +9,6 @@ namespace Acme.ChatABP.Messages
 {
     public interface IChatAppServices: IApplicationService
     {
-        Task CreateAsync(MessageRequest input);
+        void CreateAsync(MessageRequest input);
     }
 }

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.EventBus;
 using Volo.Abp.EventBus.Distributed;
@@ -17,33 +18,32 @@ using Volo.Abp.Identity;
 
 namespace Acme.ChatABP.Messages
 {
-    public class ChatAppservice: ApplicationService,IChatAppServices
+    public class ChatAppservice : ApplicationService, IChatAppServices, ITransientDependency
     {
         private readonly IRepository<Message, Guid> _messageRepository;
         private readonly IIdentityUserRepository _identityUserRepository;
         private readonly ILookupNormalizer _lookupNormalizer;
-        private readonly IEventBus _distributedEventBus;
+        private readonly IDistributedEventBus _distributedEventBus;
+        private readonly IProducer _producer;
+        
         
 
-       public ChatAppservice(IRepository<Message, Guid> messageRepository , IIdentityUserRepository identityUserRepository, ILookupNormalizer lookupNormalizer, IEventBus distributedEventBus)
+       public ChatAppservice(IRepository<Message, Guid> messageRepository , IIdentityUserRepository identityUserRepository, ILookupNormalizer lookupNormalizer, IDistributedEventBus distributedEventBus, IProducer producer)
         {
             _messageRepository = messageRepository;
             _identityUserRepository = identityUserRepository;
             _lookupNormalizer = lookupNormalizer;
             _distributedEventBus = distributedEventBus;
+            _producer = producer;
            
            
         }
 
-
-        public async Task CreateAsync(MessageRequest input)
+        public void CreateAsync(MessageRequest input)
         {
-            
-
             var message = new Message(GuidGenerator.Create(), input.SenderName
                     , input.Content, input.TimeStamp);
-            //await _messageRepository.InsertAsync(message);
-            await _distributedEventBus.PublishAsync(new ReceivedMessageEto(GuidGenerator.Create(), input.SenderName, input.Content));
+            _producer.PushMessageToRabbitMQ(input);
         }
     }
 }

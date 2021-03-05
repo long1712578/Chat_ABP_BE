@@ -9,20 +9,14 @@ namespace Acme.ChatABP.Controllers
 {
     /* Inherit your controllers from this class.
      */
-    public  class ChatABPController : AbpController, IChatAppServices
+    public  class ChatABPController : AbpController
     {
-        private readonly IChatAppServices _chatAppService;
-        private readonly Producer _producer;
-        public ChatABPController(IChatAppServices chatAppService, Producer producer)
+       
+        public ChatABPController(IChatAppServices chatAppService, IProducer producer)
         {
             //LocalizationResource = typeof(ChatABPResource);
-            _chatAppService = chatAppService;
-            _producer = producer;
+           
         }
-        public async Task CreateAsync(MessageRequest input)
-        {
-          
-            await _chatAppService.CreateAsync(input);
-        }
+        
     }
 }

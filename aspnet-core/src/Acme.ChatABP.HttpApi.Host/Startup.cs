@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Acme.ChatABP.Messages;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,8 @@ namespace Acme.ChatABP
                             .AllowCredentials();
                     });
             });
+            services.AddScoped<IProducer, Producer>();
+            services.AddScoped<IChatAppServices, ChatAppservice>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)

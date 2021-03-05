@@ -9,5 +9,6 @@ namespace Acme.ChatABP.Controllers
         {
             return Redirect("~/swagger");
         }
+
     }
 }
