@@ -29,6 +29,7 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.EventBus.RabbitMq;
 using Volo.Abp.RabbitMQ;
+using Volo.Abp.Kafka;
 
 namespace Acme.ChatABP
 {
@@ -70,7 +71,12 @@ namespace Acme.ChatABP
                 options.Connections.Default.Port = 5672;
                 
             });
-            
+            Configure<AbpKafkaOptions>(options =>
+            {
+                options.Connections.Default.BootstrapServers = "192.168.1.173:9092";
+               
+            });
+
         }
 
         private void ConfigureBundles()

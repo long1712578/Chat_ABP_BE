@@ -30,7 +30,7 @@ namespace Acme.ChatABP.Controllers
         public async Task<IActionResult> SendMessageAsync([FromBody] MessageRequest input)
         {
             _chatAppServices.CreateAsync(input);
-            //await _distributedEventBus.PublishAsync("abc");
+            await _distributedEventBus.PublishAsync("abc");
             return Ok();
         }
 
