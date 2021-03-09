@@ -1,4 +1,5 @@
 ﻿using Acme.ChatABP.Messages;
+using Acme.ChatABP.RabbitMQ;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,15 +25,17 @@ namespace Acme.ChatABP
                             .AllowCredentials();
                     });
             });
+           
             services.AddScoped<IProducer, Producer>();
             services.AddScoped<IChatAppServices, ChatAppservice>();
+            services.AddScoped<IKafkaProducer, KafkaProducer>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             app.InitializeApplication();
             app.UseCors(MyAllowSpecificOrigins);
-
+            
         }
     }
 }

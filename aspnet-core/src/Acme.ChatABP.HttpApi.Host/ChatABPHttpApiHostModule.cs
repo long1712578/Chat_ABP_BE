@@ -30,6 +30,7 @@ using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.EventBus.RabbitMq;
 using Volo.Abp.RabbitMQ;
 using Volo.Abp.Kafka;
+using Confluent.Kafka;
 
 namespace Acme.ChatABP
 {
@@ -45,7 +46,7 @@ namespace Acme.ChatABP
         typeof(AbpAspNetCoreSerilogModule),
         typeof(AbpSwashbuckleModule)
     )]
-    [DependsOn(typeof(AbpEventBusRabbitMqModule))]
+    /*[DependsOn(typeof(AbpEventBusRabbitMqModule))]*/
     public class ChatABPHttpApiHostModule : AbpModule
     {
         private const string DefaultCorsPolicyName = "Default";
@@ -63,19 +64,34 @@ namespace Acme.ChatABP
             ConfigureVirtualFileSystem(context);
             ConfigureCors(context, configuration);
             ConfigureSwaggerServices(context, configuration);
-            Configure<AbpRabbitMqOptions>(options =>
-            {
-                options.Connections.Default.UserName = "guest";
-                options.Connections.Default.Password = "tmt123123@";
-                options.Connections.Default.HostName = "192.168.1.173";
-                options.Connections.Default.Port = 5672;
-                
-            });
-            Configure<AbpKafkaOptions>(options =>
-            {
-                options.Connections.Default.BootstrapServers = "192.168.1.173:9092";
-               
-            });
+            /* Configure<AbpRabbitMqOptions>(options =>
+             {
+                 options.Connections.Default.UserName = "guest";
+                 options.Connections.Default.Password = "tmt123123@";
+                 options.Connections.Default.HostName = "192.168.1.173";
+                 options.Connections.Default.Port = 5672;
+
+             });*/
+            /* Configure<AbpKafkaOptions>(options =>
+             {
+                 options.Connections.Default.BootstrapServers = "192.168.1.173:9092";
+                 options.ConfigureConsumer = config =>
+                 {
+                     config.GroupId = "MyGroupId";
+                     config.EnableAutoCommit = false;
+                 };
+                 options.ConfigureProducer = config =>
+                 {
+                     config.MessageTimeoutMs = 6000;
+                     config.Acks = Acks.All;
+                 };
+                 options.ConfigureTopic = specification =>
+                 {
+                     specification.ReplicationFactor = 3;
+                     specification.NumPartitions = 3;
+                 };
+             });*/
+           
 
         }
 
@@ -247,6 +263,7 @@ namespace Acme.ChatABP
                 c.OAuthClientSecret(configuration["AuthServer:SwaggerClientSecret"]);
             });
 
+           
             app.UseAuditing();
             app.UseAbpSerilogEnrichers();
             app.UseConfiguredEndpoints();
