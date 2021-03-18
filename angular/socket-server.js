@@ -1,6 +1,9 @@
 let express = require('express')
 let app = express();
 let uniqid = require('uniqid');
+const { InMemorySessionStore } = require("./sessionStore");
+const sessionStore = new InMemorySessionStore();
+
 
 let path = require('path');
 app.use(express.static(__dirname + '/dist/chatApp'));
@@ -36,19 +39,35 @@ let Consumer=kafka.Consumer,
             autoCommit:false
         });
 
-
+io.use((socket, next) => {
+    const sessionID = socket.handshake.sessionID;
+    if (sessionID) {
+        const session = sessionStore.findSession(sessionID);
+        if (session) {
+        socket.sessionID = sessionID;
+        socket.userId = session.userId;
+        return next();
+        }
+    }
+    socket.sessionID = uniqid();
+    socket.userId = "123";
+    next();
+    });
+                
 var clients = [];
 var busyUsers = [];
 var numUsers = 0;
 var socketMap = {};
 io.on('connection', (socket) => {
-    var addedUser = false;
-    
-    socket.userId="1";
-    var userId=socket.handshake.userId;
-    if(!socketMap[userId]){
-        socketMap[userId]=[];
-    }
+    console.log("connectrion")
+    sessionStore.saveSession(socket.sessionID, {
+        userId: socket.userId
+      });
+      
+      socket.emit("session", {
+        sessionID: socket.sessionID,
+        userId: socket.userId,
+      });
     
     consumer.on('message', function(message){
         var listMessages = JSON.parse(message.value);

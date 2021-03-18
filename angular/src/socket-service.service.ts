@@ -66,7 +66,7 @@ export class SocketServiceService {
     public GetSession() {
         return Observable.create((observer: any) => {
             this.socket.on('session', (data: any) => {
-                localStorage.setItem('sessionId', data.sessionId);
+                localStorage.setItem('sessionId', data.sessionID);
                 observer.next(data);
             });
         });
