@@ -17,9 +17,16 @@ export class LoginComponent implements OnInit {
     private router: Router) {
   }
   ngOnInit(): void {
-    throw new Error('Method not implemented.');
+  this.GetSession();
   }
-
+ // tslint:disable-next-line:typedef
+ GetSession(){
+  this.socketIOService.GetSession()
+  .subscribe((data: any) => {
+    
+    console.log('sesssss: ', data);
+  });
+ }
   Login() {
     if (this.uname != '') {
       sessionStorage.setItem('username', this.uname);

@@ -7,8 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Helpers;
 
 namespace Acme.ChatABP.RabbitMQ
 {
@@ -16,6 +18,7 @@ namespace Acme.ChatABP.RabbitMQ
     {
         private readonly ILogger<KafkaProducer> _logger;
         private IProducer<Null, string> _producer;
+
         public KafkaProducer(ILogger<KafkaProducer> logger)
         {
             _logger = logger;
@@ -30,23 +33,9 @@ namespace Acme.ChatABP.RabbitMQ
 
             await _producer.ProduceAsync("message", new Message<Null, string>()
             {
-                Value = "gui lan"
-            }); ; 
+                Value = JsonSerializer.Serialize(message)
+        })  ; 
             _producer.Flush(TimeSpan.FromSeconds(10)); 
         }
-       /* public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            var value = "Hello World long";
-            await _producer.ProduceAsync("message", new Message<Null, string>()
-            {
-                Value = value
-            }, cancellationToken);
-            _producer.Flush(TimeSpan.FromSeconds(10));
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }*/
     }
 }

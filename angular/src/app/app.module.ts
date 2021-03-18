@@ -20,10 +20,7 @@ import { HomeComponent } from './home/home.component';
 
 registerLocaleData(en);
 
-const config: SocketIoConfig = { url: 'http://localhost:9000', options: {"force new connection" : true,
-"reconnectionAttempts": "Infinity", 
-"timeout" : 10000,                  
-"transports" : ["websocket"]} };
+const config: SocketIoConfig = { url: 'http://localhost:9000', options: {}};
 @NgModule({
   declarations: [
     AppComponent,
