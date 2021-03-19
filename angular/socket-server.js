@@ -1,11 +1,10 @@
 let express = require('express')
 let app = express();
 let uniqid = require('uniqid');
+let path = require('path');
 const { InMemorySessionStore } = require("./sessionStore");
 const sessionStore = new InMemorySessionStore();
 
-
-let path = require('path');
 app.use(express.static(__dirname + '/dist/chatApp'));
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
 
@@ -38,7 +37,9 @@ let Consumer=kafka.Consumer,
             groupId: 'Message',
             autoCommit:false
         });
-
+//middleware
+    //sessionID, private, which will be used to authenticate the user upon reconnection
+    //user ID, public, which will be used as an identifier to exchange messages
 io.use((socket, next) => {
     const sessionID = socket.handshake.sessionID;
     if (sessionID) {
@@ -50,59 +51,51 @@ io.use((socket, next) => {
         }
     }
     socket.sessionID = uniqid();
-    socket.userId = "123";
+    var senderId;
+    //Get senderId from kafka
+    // consumer.on('message', function(message){
+    //     var value = JSON.parse(message.value);
+    //     senderId=value.senderId;
+    // })
+    socket.userId = "123";//senderId of kafka
     next();
-    });
+});
                 
-var clients = [];
-var busyUsers = [];
+var clientOnlines = [];
 var numUsers = 0;
-var socketMap = {};
 io.on('connection', (socket) => {
-    console.log("connectrion")
+    console.log(`a user has connection ${socket.senderId}`)
     sessionStore.saveSession(socket.sessionID, {
         userId: socket.userId
       });
-      
-      socket.emit("session", {
-        sessionID: socket.sessionID,
-        userId: socket.userId,
-      });
-    
+    //save user online
+    clientOnlines.push(socket.userId);
+    //session
+    socket.emit("session", {
+    sessionID: socket.sessionID,
+    userId: socket.userId,
+    });
+    // join the "userID" room
+    socket.join(socket.userId);
+    //send message to user in conversation
     consumer.on('message', function(message){
         var listMessages = JSON.parse(message.value);
         console.log("message",listMessages.listUserId);
+        var content=listMessages.content;
         listMessages.listUserId.forEach(userId=>{
-            socket.broadcast.to(userId).emit('add message',{message});
+            socket.broadcast.to(userId).emit('add message',{content});
         })
     })
-    //Message
-
-    socket.on('add user', (username) => {
-        console.log('userId: ', socket.id);
-        if (addedUser) return;
-        //add customer in list client.
-        clients.push({
-            id: socket.id,
-            username: username,
-            busy: false
-        });
-        // we store the username in the socket session for this client
-        socket.username = username;
-        ++numUsers;
-        addedUser = true;
-        socket.emit('login-user-count', {
-            numUsers: numUsers
-        });
-        socket.emit('logged-user', {
-            username: socket.username,
-            numUsers: numUsers
-        });
-
-        setInterval(() => {
-            socket.broadcast.emit('client-list', clients);
-        }, 3000);
-    });
-
-    
+    //disconnection socket
+    socket.on('disconnection', async() => {
+        const matchingSockets=await io.in(socket.userId).allSockets();
+        console.log('matching socket', matchingSockets);
+        const isDisconnection=matchingSockets.size===0;
+        if(isDisconnection){
+            console.log('disconnection');
+            socket.broadcast.emit("user disconnected", socket.userId);
+            clientOnlines= clientOnlines.filter(e => e !== socket.userId);
+        }
+    })
+  
 });
